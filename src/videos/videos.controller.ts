@@ -1,13 +1,38 @@
-import { Controller, Get, NotFoundException, Param, Res } from '@nestjs/common';
+import { Controller, Get, Param, Res } from '@nestjs/common';
 import { Response } from 'express';
 import { VideosService } from './videos.service';
 import * as fs from 'fs';
+import { ApiResponse, ApiTags } from '@nestjs/swagger';
+@ApiTags('Videos')
 @Controller('videos')
 export class VideosController {
   constructor(private readonly videosService: VideosService) {}
 
   @Get(':filename')
-  getVideo(@Param('filename') filename: string, @Res() res: Response) {
+  @ApiResponse({
+    status: 200,
+    description: 'Videos',
+    content: {
+      'video/mp4': {},
+    },
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Not Found',
+    content: {
+      'application/json': {
+        schema: {
+          example: {
+            message:
+              'Video not found at path: /run/media/NhanElastic/NHANBEL/AIC24/video/L12_V0123.mp4',
+            error: 'Not Found',
+            statusCode: 404,
+          },
+        },
+      },
+    },
+  })
+  Video(@Param('filename') filename: string, @Res() res: Response) {
     const videoPath = this.videosService.getVideo(filename);
     const stat = fs.statSync(videoPath);
     const fileSize = stat.size;
@@ -23,6 +48,28 @@ export class VideosController {
     });
   }
 
+  @ApiResponse({
+    status: 200,
+    description: 'Videos',
+    content: {
+      'image/jpeg': {},
+    },
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Not Found',
+    content: {
+      'application/json': {
+        schema: {
+          example: {
+            statusCode: 404,
+            message:
+              "ENOENT: no such file or directory, stat '/run/media/NhanElastic/NHANBEL/AIC24/video/L12_V012.mp4-frame-1233123132.jpg'",
+          },
+        },
+      },
+    },
+  })
   @Get('thumb/:filename/:frameNumber')
   async getThumbnail(
     @Param('filename') filename: string,
