@@ -4,15 +4,8 @@ import { NestExpressApplication } from '@nestjs/platform-express';
 import { setupSwagger } from './swagger.config';
 
 async function bootstrap() {
-  const app = await NestFactory.create<NestExpressApplication>(AppModule);
-  app.enableCors({
-    origin: 'http://localhost:5500', // Adjust as needed
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-    credentials: true, // If you need to send cookies or HTTP authentication
-  });
-
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, {cors: true});
   setupSwagger(app);
-
-  await app.listen(3000);
+  await app.listen(3000, '0.0.0.0');
 }
 bootstrap();
