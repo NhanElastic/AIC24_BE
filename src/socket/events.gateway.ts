@@ -7,7 +7,14 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 
-@WebSocketGateway(8080, { cors: true }) // Set your desired port and enable CORS
+@WebSocketGateway(8080, {
+  cors: {
+    origin: 'http://localhost:3001', // Your frontend URL
+    methods: ['GET', 'POST'],
+    allowedHeaders: ['Content-Type'],
+    credentials: true,
+  },
+})
 export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
   server: Server;
@@ -20,9 +27,14 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     console.log(`Client disconnected: ${client.id}`);
   }
 
-  @SubscribeMessage('message')
-  handleMessage(client: Socket, payload: string): void {
-    console.log(`Received message: ${payload}`);
-    this.server.emit('message', `Server received: ${payload}`); // Broadcast to all clients
+  @SubscribeMessage('chat')
+  handleChat(
+    client: Socket,
+    payload: { message: string; username: string },
+  ): void {
+    console.log(
+      `Received chat message from ${payload.username}: ${payload.message}`,
+    );
+    this.server.emit('chat', payload); // Broadcast message to all clients
   }
 }
