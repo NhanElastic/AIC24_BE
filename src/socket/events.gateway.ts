@@ -35,6 +35,14 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     console.log(
       `Received chat message from ${payload.username}: ${payload.message}`,
     );
-    this.server.emit('chat', payload); // Broadcast message to all clients
+    this.server.emit('chat', payload);
+  }
+
+  @SubscribeMessage('image')
+  handleImage(
+    client: Socket,
+    payload: { message: string; username: string },
+  ): void {
+    this.server.emit('chat', payload);
   }
 }
